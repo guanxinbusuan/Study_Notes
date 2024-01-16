@@ -96,3 +96,17 @@
 > 这条命令会将当前所在的 `master` 分支推送到 `origin` 这个远程主机上，并且与其上面的 `main` 分支进行关联。
 
 ###### 
+
+- ###### 解决 `ssh: connect to host github.com port 22: Connection refuse` 报错：
+
+> 1. 首先 `cd` 到 `.ssh` 文件所在的路径，通过 `ls -l` 命令查看当前路径下是否有一个 config 文件，如果没有则使用 `touch` 命令创建一个
+> 
+> 2. 然后通过 `vim` 命令把以下内容添加到 config 文件中(改变ssh传输的端口号):
+> 
+> 3. ```shell
+>    Host github.com
+>      Hostname ssh.github.com
+>      Port 443
+>    ```
+> 
+> 4. 切换到 git 项目后，执行 git pull 命令，在给出提示信息后在终端输入 yes 就行
