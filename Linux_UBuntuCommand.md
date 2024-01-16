@@ -142,6 +142,7 @@ openjdk-21-source - OpenJDK Development Kit (JDK) source files
 > 
 > - 最后一步：复制`/usr/share/applications` 的`Steam++.desktop`粘贴到桌面，再然后允许运行即可.
 
+
 ----------
 
 - [x] ##### 卸载与清理各类软件包
@@ -157,3 +158,7 @@ $ sudo apt autoremove
 ```shell
 $ sudo apt-get remove <package_name>
 ```
+
+
+
+---------
