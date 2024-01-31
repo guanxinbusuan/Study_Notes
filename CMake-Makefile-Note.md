@@ -417,8 +417,6 @@ clean:
 
 - 添加上 `.PHONY : clean` 后再执行 `$ make clean`,可以看到 `clean` 目标下的 `rm -r $(OUTPUT)` 得到了执行。
 
-
-
 ### 简化终端输出
 
 现在我们的 Makefile 所输出的内容会有些杂乱无章，我们很难直观看出哪条命令在编译哪个文件。所以我们常通过 `@` 符号，来禁止 Makefile 将执行的命令输出至终端上：
@@ -442,25 +440,21 @@ $(OUTPUT)/%.o : %.c
 > OBJS := $(patsubst %.c,$(OUTPUT)/%.o,$(SRCS))
 > 
 > main:$(OBJS)
-> 	@echo linking...
-> 	@gcc $(OBJS) -o main
-> 	@echo Complete!
+>     @echo linking...
+>     @gcc $(OBJS) -o main
+>     @echo Complete!
 > 
 > $(OUTPUT)/%.o : %.c
-> 	@echo compile $<...
-> 	@mkdir -p $(dir $@)
-> 	@gcc -c $(INCS) $< -o $@
+>     @echo compile $<...
+>     @mkdir -p $(dir $@)
+>     @gcc -c $(INCS) $< -o $@
 > 
 > .PHONY : clean
 > clean:
-> 	@echo try to clean...
-> 	@rm -rf $(OUTPUT)
-> 	@echo Complete!
+>     @echo try to clean...
+>     @rm -rf $(OUTPUT)
+>     @echo Complete!
 > ```
-
-
-
-
 
 - [x] ### 自动生成依赖
 
@@ -474,14 +468,10 @@ $(OUTPUT)/%.o : %.c
 ```
 
 > 但这实现起来并不容易，我们需要在 Makefile 中为每个源文件单独添加头文件依赖，手动维护这些依赖关系会是一件极其痛苦的事情。幸运的是，gcc 提供了强大的自动生成依赖功能，仅需在<mark>编译时指定 `-MMD` 选项</mark>，就能得到记录有依赖关系的 *.d 文件。
-> 
-> 
 
 > > `-MMD` 选项包含两个动作，一是生成依赖关系，二是保存依赖关系到 *.d 文件。与其类似的选项还有 `-MD`，其作用与 `-MMD` 相同，差别在于 `-MD` 选项会将系统头文件一同添加到依赖关系中。
 > > 
 > > - <mark>另外我们还可以指定 `-MP` 选项</mark>，这会为每个依赖添加一个没有任何依赖的伪目标。`-MP` 选项生成的伪目标，可以有效避免删除头文件时，Makefile 因找不到目标来更新依赖所报的错误：`` `make: *** No rule to make target 'dummy.h', needed by 'dummy.o'. Stop. ``
-
-
 
 **接着我们还需要将 *.d 文件记录的依赖关系，手动包含到 Makefile 中，这样才能使其真正发挥作用。所以 Makefile 又可以修改为：**
 
@@ -518,16 +508,6 @@ clean:
 ```
 
 > 最后一行的 `include` 用于将指定文件的内容插入到当前文本中。初次编译，或者 make clean 后再次编译时，*.d 文件是不存在的，这通常会导致 include 操作报错。所以我们在 `include` 前加了 `-` 符号，其作用是指示 make 在 include 操作出错时忽略这个错误，不输出任何错误信息并继续执行接下来的操作。
-
- 
-
-
-
-
-
-
-
-
 
 - [x] ### 通用模板
 
@@ -569,13 +549,7 @@ clean:
 -include $(DEPS)
 ```
 
-
-
-
-
-
-
-
+*补充：对Makefile的要求为——能看懂，知道构建目的即可，因为现在CMake能自动生成Makefile!*
 
 
 
@@ -672,8 +646,57 @@ clean:
    > 
    > ![](https://img-blog.csdnimg.cn/004c160f555f4007a0d30791a1b07460.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAQ-WQm-iOq-eskQ==,size_20,color_FFFFFF,t_70,g_se,x_16)
 
-
-
 > 目标的更新： a. 检查目标的所有依赖，任何一个依赖有更新时，就重新生成目标； b. 目标文件比依赖文件时间晚，则需要更新。
 > 
 > > <img src="https://img-blog.csdnimg.cn/40331a847c0240148f4d751c4532bb2d.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAQ-WQm-iOq-eskQ==,size_20,color_FFFFFF,t_70,g_se,x_16" title="" alt="" width="467">
+
+
+
+- [x] #### 制作动态链接库，静态链接库
+
+Makefile可以通过命令行来构建动态链接库（通常以 .so 结尾，在Windows上是 .dll）或静态链接库（通常以 .a 结尾）。在Makefile中，你可以定义规则来编译源代码文件，并将它们链接成库文件。
+下面是一个简单的例子，展示了如何使用Makefile来构建一个动态链接库和一个静态链接库：
+
+```makefile
+# 定义库的名称
+LIB_NAME := mylib
+
+# 定义动态链接库的目标文件名
+SHARED_LIB := lib$(LIB_NAME).so
+
+# 定义静态链接库的目标文件名
+STATIC_LIB := lib$(LIB_NAME).a
+
+# 源文件列表
+SRC_FILES := $(wildcard *.c)
+
+# 动态链接库的目标文件列表
+SHARED_OBJS := $(patsubst %.c,%.o,$(SRC_FILES))
+
+# 静态链接库的目标文件列表
+STATIC_OBJS := $(patsubst %.c,%.o,$(SRC_FILES))
+
+# 编译选项
+CFLAGS := -Wall -Iinclude
+LDFLAGS := -shared -Wl,-soname,$(SHARED_LIB)
+
+# 动态链接库规则
+$(SHARED_LIB):$(SHARED_OBJS)
+	@gcc $(LDFLAGS)$^ -o $@
+
+# 静态链接库规则
+$(STATIC_LIB):$(STATIC_OBJS)
+	@ar rcs $@$^
+
+# 从源文件到目标文件的编译规则
+%.o: %.c
+	@gcc $(CFLAGS) -c$< -o $@
+
+.PHONY: clean
+clean:
+	@rm -f *.o $(SHARED_LIB)$(STATIC_LIB)
+
+.PHONY: all
+all: $(SHARED_LIB)$(STATIC_LIB)
+
+```
